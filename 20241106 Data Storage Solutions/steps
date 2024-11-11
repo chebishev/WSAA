@@ -1,0 +1,37 @@
+# I am using Two machines (DC and SERVER1) on Hyper-V
+# For the main network cards I am using NAT vSwitch (with name NAT on the adapter)
+# for the secondary cards - default Switch (with name PRIVATE on the adapter)
+
+# rename machines:
+Rename-Computer -NewName DC
+Restart-Computer
+Rename-Computer -NewName SERVER1
+Restart-Computer
+# On the first machine I am installing AD and adding the second machine to the domain
+Install-WindowsFeature -Name AD-Domain-Services -IncludeManagementTools
+# after that graphically promote the machine to domain controller - WSAA.LAB
+
+# I have access to both machines via Powershell, but they are with GUI
+Enter-PSSession -VMName DC
+Enter-PSSession -VMName SERVER1
+
+# preparation for the second machine:
+New-VHD -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\101.vhdx" -SizeBytes 10gb -Dynamic
+New-VHD -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\102.vhdx" -SizeBytes 10gb -Dynamic
+New-VHD -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\201.vhdx" -SizeBytes 20gb -Dynamic
+New-VHD -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\202.vhdx" -SizeBytes 20gb -Dynamic
+Add-VMHardDiskDrive -VMName SERVER1 -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\101.vhdx"
+Add-VMHardDiskDrive -VMName SERVER1 -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\102.vhdx"
+Add-VMHardDiskDrive -VMName SERVER1 -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\201.vhdx"
+Add-VMHardDiskDrive -VMName SERVER1 -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\202.vhdx"
+Enter-PSSession -VMName SERVER1
+Get-PhysicalDisk | Where CanPool -eq True | Select UniqueId, MediaType, Size
+Set-PhysicalDisk -UniqueId 60022480551964BF21B54954F2DA2313 -MediaType SSD
+Set-PhysicalDisk -UniqueId 60022480A32BC24C727085E3ECECD67C -MediaType SSD
+Set-PhysicalDisk -UniqueID 60022480252DC6E855DBF9964F6D76A9 -MediaType HDD
+Set-PhysicalDisk -UniqueID 6002248091D1806E89E28BD041186869 -MediaType HDD
+
+# create new pool, virtual disk, volume
+# install iSCSI Target Server on the second machine
+# setup iSCSI Initiator on the first machine (with target 192.168.67.201)
+
