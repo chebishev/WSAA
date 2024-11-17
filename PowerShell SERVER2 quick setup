@@ -1,0 +1,2 @@
+Rename-Computer -NewName SERVER2 -Restart
+Add-Computer -DomainName WSA -DomainCredential Administrator
