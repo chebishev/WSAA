@@ -1,3 +1,6 @@
+# rename the computer:
+Rename-Computer -NewName DC -Restart
+
 # run the first script:
 .\DC quick setup part 1.ps1
 
