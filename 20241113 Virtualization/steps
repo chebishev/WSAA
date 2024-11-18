@@ -1,0 +1,18 @@
+# Two 127 GB machines created:
+
+# Machine 1 (2048MB RAM, 2CPU):
+# DC with AD DS role installed - WSAA.LAB
+# by default are added 2 users (admin.user and regular.user) and two computers (SERVER1 and SERVER2)
+
+# Machine 2 (4096MB RAM, 2CPU, 2NICs):
+# Enabled Hyper-V installation with the script from the practice
+Set-VMProcessor -VMName VM1 -ExposeVirtualizationExtensions $true
+Set-VMMemory -VMName VM1 -DynamicMemoryEnabled $false
+Set-VMNetworkAdapter -VMName VM1 -MACAddressSpoofing on
+# Installed Hyper-V with management tools
+# renamed to SERVER1 and connected to DC
+
+# On SERVER1 downloading the vhdx from https://zahariev.pro/go/wsaa-templates
+# Create new VM Generation 1 with the needed parameters
+# login to the machine with the given credentials and change the ip and gateway in etc/network/interfaces
+# the machine has no sudo or nano, so "vi" was used for the configuration

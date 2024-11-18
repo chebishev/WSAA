@@ -5,7 +5,3 @@
 
 # run the second script:
 .\DC quick setup part 2.ps1
-
-# configure the computer name and domain join
-# and generalize the installation
-.\DC sysprep.ps1

@@ -1,6 +1,16 @@
 # Ensure the AD module is imported
 Import-Module ActiveDirectory
 
+# Create Computer objects for the two servers
+Write-Host "Creating computer objects..." -ForegroundColor Yellow
+1..2 | ForEach-Object {
+    $computerName = "SERVER$_"
+    New-ADComputer -Name $computerName `
+                   -SamAccountName $computerName `
+                   -Enabled $true
+    Write-Host "Created computer object: $computerName" -ForegroundColor Green
+}
+
 # Create Admin User
 New-ADUser -Name "Admin User" `
            -UserPrincipalName "admin.user@wsaa.lab" `

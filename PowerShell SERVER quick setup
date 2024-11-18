@@ -1,0 +1,10 @@
+# DC, SERVER1, SERVER2 etc
+Rename-Computer -NewName XXXXXX -Restart
+
+# for client machines only:
+# check the DC DNS address
+# get the index of the current net adapter
+Get-NetAdapter
+Set-DNSClientServerAddress -InterfaceIndex ? -ServerAddresses "192.168.99.xxx"
+Add-Computer -DomainName WSAA -DomainCredential Administrator
+shutdown /r /t 0
