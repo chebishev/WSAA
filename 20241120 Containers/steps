@@ -1,0 +1,33 @@
+# Preparation:
+# The machine name is Homework27112024. It is standalone, 
+# so Default Switch will provide the network connection
+# So on the host we run the following sequence of commands:
+Set-VMProcessor -VMName Homework27112024 -ExposeVirtualizationExtensions $true
+Set-VMMemory -VMName Homework27112024 -DynamicMemoryEnabled $false
+Set-VMNetworkAdapter -VMName Homework27112024 -MACAddressSpoofing on
+# Checking free ram on my machine. It is 6.4 of 11.8, so 4096 will do the job
+# When the server is ready the next command is in its powershell:
+Install-WindowsFeature -Name Hyper-V -IncludeManagementTools -Restart
+# After the restart we proceed with the docker installation:
+Invoke-WebRequest -Uri https://get.mirantis.com/install.ps1 -o install.ps1
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Force -Scope Process
+.\install.ps1
+# check installation:
+Get-Service containerd,docker
+
+# Task 1:
+docker run -d -p 9000:80 mcr.microsoft.com/windows/servercore/iis
+
+# Task 2:
+mkdir C:\docker-images\web
+cd C:\docker-images\web
+notepad index.html
+# add text and image
+# return to docker-images folder and create Dockerfile
+# build the image:
+docker image build -t homerwork-iis:v1
+# check if the image exists
+docker image ls
+# Run the image on port 8080
+docker run -d -p 8080:80 homework-iis:v1
+# Check localhost:8080
