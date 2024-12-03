@@ -1,0 +1,48 @@
+# Preparations
+# create 3 machines S1..S3 using script CreateVMs.ps1
+# start the machines
+# add three new computers to DC S1..S3 (DC quick setup.ps1 run from the DC machine)
+# Go through the initial setup and set passwords for the machines
+# add the machines to dc (RenameServers.ps1 + ServersToDomain.ps1)
+
+# dhcp ip range for the machines 192.168.99.119-121
+# TASK 1
+# add NLB role for the s1, s2, s3
+Invoke-Command -VMName $SERVERNAME -ScriptBlock {Install-WindowsFeature NLB -IncludeManagementTools}
+# add new virtual switch (NLB) for the s1, s2, s3 and set the same ip addresses manually (but in network 98 just in order to keep the main working network clean)
+
+# TASK 2
+# if the Storage will be on the DC. We will Make the additional DISKS to it
+# 1GB for witness, 5GB for file sharing
+New-VHD -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\1gb.vhdx" -SizeBytes 1gb -Dynamic
+New-VHD -Path "C:\ProgramData\Microsoft\Windows\Virtual Hard Disks\5gb.vhdx" -SizeBytes 5gb -Dynamic
+# I'll isolate the storage in another network (97) and use the same ip addresses again
+# everywhere the new network name is Ethernet 2, so I'll take advantage on it and i'll automate the process of renaming and setting IP addresses
+$credentials = Get-Credential
+Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
+    Rename-NetAdapter -Name "Ethernet 2" -NewName "Storage"
+    New-NetIPAddress -InterfaceAlias "Storage" -IPAddress "192.168.97.$IP" -PrefixLength 24
+}
+# Using that with DC, S1, S2, S3 -> 109, 119, 120, 121
+# Going through the process of iSCSI target and initiator configuring
+# It's the same as in practice until the Scale-Out File Server Configuration is needed:
+# - install target server on DC
+# - create quorum disk and target (1gb)
+# - create shared disk and target (5gb)
+# - add 97.199-121 ip addresses to the targets
+# - configure initiator on S1, S2, S3 with the corresponding addresses in network 97
+# - Only on S1 i'm bringing the newly added disks online/gpt/with the corresponding names and letters
+# My DC already has File server installed so this is not needed:
+Install-WindowsFeature -Name FS-FileServe
+# I am installing only Failover Clustering
+Install-WindowsFeature -Name Failover-Clustering -IncludeManagementTools
+# when i see that the same procedure is needed on S1..S3 I'm doing it via powershell command:
+# the credentials are still in a variable:
+Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
+    Install-WindowsFeature -Name Failover-Clustering -IncludeManagementTools
+}
+# validate configuration
+# delete the NLB cluster via RSAT-NLB from DC, because it makes problems with the cluster creation
+# remove the network cards connected to NLB switch and remove the switch as well
+# reboot all machines
+# validate configuration and create cluster named "cluster1"
