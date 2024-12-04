@@ -24,6 +24,12 @@ Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
     New-NetIPAddress -InterfaceAlias "Storage" -IPAddress "192.168.97.$IP" -PrefixLength 24
 }
 # Using that with DC, S1, S2, S3 -> 109, 119, 120, 121
+# only the servers will be isolated also in private 98 network (another virtual switch was created for the private network)
+Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
+    Rename-NetAdapter -Name "Ethernet 2" -NewName "Private"
+    New-NetIPAddress -InterfaceAlias "Private" -IPAddress "192.168.98.$IP" -PrefixLength 24
+}
+# Using that with S1, S2, S3 -> 119, 120, 121
 # Going through the process of iSCSI target and initiator configuring
 # It's the same as in practice until the Scale-Out File Server Configuration is needed:
 # - install target server on DC
@@ -32,8 +38,12 @@ Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
 # - add 97.199-121 ip addresses to the targets
 # - configure initiator on S1, S2, S3 with the corresponding addresses in network 97
 # - Only on S1 i'm bringing the newly added disks online/gpt/with the corresponding names and letters
-# My DC already has File server installed so this is not needed:
-Install-WindowsFeature -Name FS-FileServe
+# My DC already has File server installed so this is needed only on S1..S3:
+Install-WindowsFeature -Name FS-FileServer
+# ofcourse with Invoke-Command i can use the same command on S1..S3
+Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
+    Install-WindowsFeature -Name FS-FileServer
+}
 # I am installing only Failover Clustering
 Install-WindowsFeature -Name Failover-Clustering -IncludeManagementTools
 # when i see that the same procedure is needed on S1..S3 I'm doing it via powershell command:
@@ -45,4 +55,13 @@ Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
 # delete the NLB cluster via RSAT-NLB from DC, because it makes problems with the cluster creation
 # remove the network cards connected to NLB switch and remove the switch as well
 # reboot all machines
+# of course there was a problem with the validation, so I’ve recreated the environment
+# the new dns is 99.136, S1..S3 has 137..139 IP addresses, 
+# but I’ve kept the 97 network for Storage and 98 network for Private with 119, 120, 121 as IP addresses to the Servers.
+# DC was only connected to the STORAGE, so it has 97.109 IP there
+
+Set-VMNetworkAdapter -VMName $SERVERNAME -MACAddressSpoofing on
 # validate configuration and create cluster named "cluster1"
+# Configure role - File Server - Scale-Out File Server for application data - Add NETBIOS name - Next - Configure HA - Finish
+
+# TASK 3
