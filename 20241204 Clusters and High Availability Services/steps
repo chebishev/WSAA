@@ -47,7 +47,7 @@ Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
 # I am installing only Failover Clustering
 Install-WindowsFeature -Name Failover-Clustering -IncludeManagementTools
 # when i see that the same procedure is needed on S1..S3 I'm doing it via powershell command:
-# the credentials are still in a variable:
+# the credentials are still in a variable
 Invoke-Command -VMName $SERVERNAME -Credential $credentials -ScriptBlock {
     Install-WindowsFeature -Name Failover-Clustering -IncludeManagementTools
 }
@@ -65,3 +65,27 @@ Set-VMNetworkAdapter -VMName $SERVERNAME -MACAddressSpoofing on
 # Configure role - File Server - Scale-Out File Server for application data - Add NETBIOS name - Next - Configure HA - Finish
 
 # TASK 3
+# Preparations:
+# Open ports 2377 TCP, 7946 TCP/UDP, 4789 UDP (these are open by default, maybe from docker installation)
+# Install docker engine 1.13.0 or later
+
+# initialize the cluster (my address is 192.168.23.97)
+docker swarm init --advertise-addr 192.168.23.97 --listen-addr 192.168.23.97:2377
+# After that I am joined to the swarm and I am the manager
+# creating an overlay network and test configuration
+docker network create --driver=overlay softuni_homework
+docker node ls
+docker network ls
+docker service create
+docker service create --name=test_service --endpoint-mode dnsrr --network=softuni_homework hello-world
+# this image is not a service and will not run properly, but it checks out on
+docker service ls
+# I am trying the same with nginx
+docker service create --name=nginx_service --network=softuni_homework nginx
+# there is another error, but the service is registered
+docker service ls
+# scalling the services
+docker service scale nginx_service=3
+docker service scale test_service=2
+docker node ls
+docker service ps nginx_service
