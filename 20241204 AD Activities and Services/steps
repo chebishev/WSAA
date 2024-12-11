@@ -1,0 +1,26 @@
+# DHCP Failover Solution
+# Preparations:
+# Two servers with static IP Addresses 99.100 and 99.131 –> DC and SERVER1
+# Install DHCP Server on both machines
+# Go trough the post process procedure
+# Add scopes for both servers
+# Configure failover and add the second server to the first one
+---------------------------------------------------------------
+# Windows Service + Group Managed Service Account (gMSA)
+# Preparations:
+# Two servers DC and SERVER1
+# On DC create AD Group HomeWorkGroup and add member to it (SERVER1)
+# Add User AppService to HomeworkGroup trough powershell commands:
+Add-KDSRootKey -EffectiveTime (Get-Date).AddHours(-10)
+New-ADServiceAccount -Name AppService -DNSHostName AppService.wsaa.lab `
+-PrincipalsAllowedToRetrieveManagedPassword HomeworkGroup
+Add-ADComputerServiceAccount -Identity SERVER1 -ServiceAccount AppService
+# on SERVER1 download the service and install it (first read the Readme)
+mkdir C:\Temp
+New-Service -ServiceName "HWService" -BinaryPathName "C:\bin\WSAAService.exe"
+# Go to services and select Properties on WSAAService -> Logon As -> This account
+# add the account name from Entire Directory
+# try to run the service
+# add the permissions to write on the log file
+# RESTART the server
+# it works now
