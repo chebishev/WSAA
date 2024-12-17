@@ -1,0 +1,8 @@
+# I've decided to use standalon WDS for this homework in order to save some resources.
+# DHCP Server will be AVHDHCP
+# Task 1:
+# Preparations
+# Download Windows 10 Enterprise
+# Make VM WDS and install WDS on it 
+# in fact WDS is needed only if we want to test the custom image on another machine
+# Add DVD with windows 10.iso in the machine
