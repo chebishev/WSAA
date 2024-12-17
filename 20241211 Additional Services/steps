@@ -1,4 +1,4 @@
-# I've decided to use standalon WDS for this homework in order to save some resources.
+# I've decided to use standalone WDS for this homework in order to save some resources.
 # DHCP Server will be AVHDHCP
 # Task 1:
 # Preparations
@@ -6,3 +6,18 @@
 # Make VM WDS and install WDS on it 
 # in fact WDS is needed only if we want to test the custom image on another machine
 # Add DVD with windows 10.iso in the machine
+# add Windows Deployment Services role
+# Tools -> Windows Deployment Services -> click on Servers and configure the server:
+# Standalone server -> Default folder (c:\RemoteInstall) -> Respond to all client computers with admin approval
+# as in practice we create two folders: custom and mount
+# copy install.wim from the DVD/Sources to custom folder
+# just check the amount of images for windows 10 enterprise:
+dism /get-wiminfo /wimfile:C:\RemoteInstall\custom\install.wim
+# the answer is 1
+# mount the image
+dism /Mount-Image /ImageFile:C:\RemoteInstall\custom\install.wim /Index:1 /MountDir:C:\mount
+# add KB update to the image
+# I choose this one: (not working)
+https://support.microsoft.com/en-us/topic/october-8-2024-kb5044273-os-builds-19044-5011-and-19045-5011-a07551f8-e20d-4fd4-87f3-01145a3cd494
+# so I put the update in new folder: packages and install it
+dism /Image:C:\mount /Add-Package /PackagePath:C:\packages\windows10.0-kb5044273-x64_46b6256779e3458e2efd74fb77e26238ab9ee253.cab
