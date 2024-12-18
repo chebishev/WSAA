@@ -9,15 +9,39 @@
 # add Windows Deployment Services role
 # Tools -> Windows Deployment Services -> click on Servers and configure the server:
 # Standalone server -> Default folder (c:\RemoteInstall) -> Respond to all client computers with admin approval
+# also create Image Group -> Homework and add the default install.wim and boot.wim in the corresponding folders
 # as in practice we create two folders: custom and mount
 # copy install.wim from the DVD/Sources to custom folder
 # just check the amount of images for windows 10 enterprise:
-dism /get-wiminfo /wimfile:C:\RemoteInstall\custom\install.wim
+dism /get-wiminfo /wimfile:C:\custom\install.wim
 # the answer is 1
 # mount the image
-dism /Mount-Image /ImageFile:C:\RemoteInstall\custom\install.wim /Index:1 /MountDir:C:\mount
+dism /Mount-Image /ImageFile:C:\custom\install.wim /Index:1 /MountDir:C:\mount
 # add KB update to the image
-# I choose this one: (not working)
-https://support.microsoft.com/en-us/topic/october-8-2024-kb5044273-os-builds-19044-5011-and-19045-5011-a07551f8-e20d-4fd4-87f3-01145a3cd494
+# I choose this one:
+# As of December 18, 2024, the latest cumulative update for Windows 10 Enterprise x64 is KB5048652, released on December 10, 2024. This update applies to both Windows 10 Version 21H2 and Version 22H2 for x64-based systems. 
+https://catalog.update.microsoft.com/Search.aspx?q=KB5048652
 # so I put the update in new folder: packages and install it
-dism /Image:C:\mount /Add-Package /PackagePath:C:\packages\windows10.0-kb5044273-x64_46b6256779e3458e2efd74fb77e26238ab9ee253.cab
+dism /Image:C:\mount /Add-Package /PackagePath:C:\packages\windows10.0-kb5048652-x64_279b3aca56a2aa72aa2d08ccc30fad69bd5a1e29.msu
+# and now we are getting the available features:
+dism /Image:C:\mount /Get-Features | findstr /R /C:"Feature Name" /C:"State : Disabled" > C:\disabled_features.txt
+# let's try to install Internet-Explorer-Optional-amd64
+dism /image:c:\mount /enable-feature /featurename:internet-explorer-optional-amd64
+# Final steps are unmount/commit and register the image to WDS:
+dism /unmount-wim /mountdir:c:\mount /commit
+# register the image to WDS
+# Make network boot on new VM andaprove and name the machine from the WDS
+# For credentials add WDS\Administrator and the password
+# Choose the newly added customized image
+# go through the post process procedure
+# check if IE and KB5048652 are installed
+
+# Task 2:
+# Preparations:
+# Download and install the Windows ADK with only Deployment tools enabled
+# create clean copy to the Windows 10 Image in the custom folder
+# Open the Windows System Image manager
+# Add the Windows 10 Enterprise image
+# Create new answer files
+# Add them to the corresponding places and test the configuration with new VM
+https://youtu.be/dkxMea9boww
