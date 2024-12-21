@@ -6,7 +6,7 @@ Write-Host "Credentials saved to $env:USERPROFILE\domainAdminCreds.xml" -Foregro
 
 # Define server name range (e.g., SERVER1, SERVER2)
 $minimumServerCount = 1
-$maximumServerCount = 2
+$maximumServerCount = 3
 
 # Generate an array of server names (SERVER1, SERVER2, etc.)
 $servers = $minimumServerCount..$maximumServerCount | ForEach-Object { "SERVER$_" }
