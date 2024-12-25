@@ -1,0 +1,27 @@
+# Based on the size of the project I choose to use the PUSH method
+
+# On DC install/update the following packages:
+Install-PackageProvider -Name NuGet -MinimumVersion 2.8.5.201 -Force
+Install-Module PowerShellGet -Force
+
+# create data file that only contains the name of the Servers and the features that will be installed.
+# see data.psd1
+
+# Create the share
+# the filename is configuration.ps1
+
+# After that I am creating C:\Homework on the DC and copy the files (data.psd1 and configuration.ps1) there
+# (it's easier to create the files via VSCode or other IDE)
+
+# Open powershell as administrator:
+# win+r -> powershell -> Ctrl + Shift + Enter
+# Run the following commands:
+Install-Module -Name ComputerManagementDsc
+cd C:\Homework
+# Source the file configuration.ps1
+. .\configuration.ps1
+# Call it and add the additional data:
+WebServer -ConfigurationData .\data.psd1
+Start-DscConfiguration -Path .\Web-Server -Wait -Verbose -Force
+
+# To test http://SERVER1 or http://SERVER2
